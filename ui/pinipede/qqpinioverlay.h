@@ -45,7 +45,7 @@ protected:
 protected slots:
 	void dlReady(QUrl &url);
 	void doVideoStateChanged(QMediaPlayer::PlaybackState newState);
-	void handleVideoError(QMediaPlayer::Error error);
+	void handleVideoError(QMediaPlayer::Error error, const QString &errorString);
 
 private:
 	void moveToMousePos(QGraphicsObject *gpw, const QSize &s);

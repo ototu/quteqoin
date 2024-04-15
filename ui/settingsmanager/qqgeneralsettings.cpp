@@ -177,7 +177,7 @@ void QQGeneralSettings::showColorDialog()
 {
 	QColor color(m_color);
 	if(! color.isValid())
-		color.setNamedColor(DEFAULT_GENERAL_HIGHLIGHT_COLOR);
+		color = QColor::fromString(DEFAULT_GENERAL_HIGHLIGHT_COLOR);
 
 	color = QColorDialog::getColor(color, this);
 	if(color.isValid())

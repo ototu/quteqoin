@@ -78,7 +78,6 @@ QQTextBrowser::QQTextBrowser(QString groupName, QQPinipede *parent) :
 	verticalScrollBar()->triggerAction(QAbstractSlider::SliderToMaximum);
 
 	setStyleSheet(QString("QTextBrowser { color : black; }"));
-
 }
 
 QQTextBrowser::~QQTextBrowser()
@@ -547,8 +546,7 @@ void QQTextBrowser::contextMenuEvent(QContextMenuEvent * ev)
 
 	QAction * copyLinkLocationAction = nullptr;
 	auto actions = menu->actions();
-	for(auto a: qAsConst(actions))
-	{
+	for (auto a : std::as_const(actions)) {
 		if(a->objectName() == copyLinkActionObjectName)
 		{
 			copyLinkLocationAction = a;

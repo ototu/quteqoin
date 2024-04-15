@@ -430,6 +430,10 @@ bool QQBouchot::event(QEvent *e)
 //////////////////////////////////////////////////////////////
 /// \brief QQBouchot::fetchBackend
 ///
+static QRegularExpression fetchBackendRE1("&?\\w+=%i", QRegularExpression::NoPatternOption);
+static QRegularExpression fetchBackendRE2("\\?$", QRegularExpression::NoPatternOption);
+static QRegularExpression fetchBackendRE3("\\?&", QRegularExpression::NoPatternOption);
+
 void QQBouchot::fetchBackend()
 {
 	QString url = m_bSettings.backendUrl();
@@ -441,13 +445,10 @@ void QQBouchot::fetchBackend()
 	if(m_lastId < 0)
 	{
 		//1° appel au backend, on supprime le last/last_id/... de l'url
-		QRegularExpression reg("&?\\w+=%i", QRegularExpression::NoPatternOption);
-		url.replace(reg, "");
+		url.replace(fetchBackendRE1, "");
 		//Nettoyage de l'url finale
-		reg.setPattern("\\?$");
-		url.replace(reg, "");
-		reg.setPattern("?&");
-		url.replace(reg, "?");
+		url.replace(fetchBackendRE2, "");
+		url.replace(fetchBackendRE3, "?");
 	}
 	else
 	{
@@ -604,6 +605,10 @@ void QQBouchot::requestFinishedSlot(QNetworkReply *reply)
 /// \brief QQBouchot::parseBackend
 /// \param data
 ///
+///
+static QRegularExpression parseBackendRE1("^<\\w+ ", QRegularExpression::NoPatternOption);
+static QRegularExpression parseBackendRE2("^\\d+\t", QRegularExpression::NoPatternOption);
+
 void QQBouchot::parseBackend(const QByteArray &data, const QString &contentType)
 {
 	if(contentType.startsWith("text/xml") ||
@@ -622,15 +627,11 @@ void QQBouchot::parseBackend(const QByteArray &data, const QString &contentType)
 		{
 			QString l = b.readLine();
 			qDebug() << Q_FUNC_INFO << l;
-			if(l.startsWith("<?xml ") ||
-			        l.contains(QRegularExpression("^<\\w+ ")))
-			{
+			if (l.startsWith("<?xml ") || l.contains(parseBackendRE1)) {
 				qDebug() << Q_FUNC_INFO << "XML found";
 				parseBackendXML(data);
 				parserFound = true;
-			}
-			else if(l.contains(QRegularExpression("^\\d+\t")))
-			{
+			} else if (l.contains(parseBackendRE2)) {
 				qDebug() << Q_FUNC_INFO << "TSV found";
 				parseBackendTSV(data);
 				parserFound = true;
@@ -1005,8 +1006,7 @@ QList<QQBouchot *> QQBouchot::listBouchotsGroup(const QString &groupName)
 QStringList QQBouchot::listGroups()
 {
 	QStringList listGroups;
-	for (auto bouchot : qAsConst(s_hashBouchots))
-	{
+	for (auto bouchot : std::as_const(s_hashBouchots)) {
 		QString group = bouchot->settings().group();
 		if(! listGroups.contains(group))
 			listGroups.append(group);

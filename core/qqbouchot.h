@@ -36,8 +36,11 @@ public:
 		QStringList aliases() const { return m_aliases; }
 		void setAliases(const QStringList &newAliases) { m_aliases = newAliases; }
 		QString aliasesToString() const { return this->m_aliases.join(QChar::fromLatin1(Separator)); }
-		void setAliasesFromString(const QString &newAliasesString) { m_aliases = newAliasesString.split(QChar::fromLatin1(Separator)); }
-		bool containsAlias(const QString & alias) { return m_aliases.contains(alias); }
+		void setAliasesFromString(const QString &newAliasesString)
+		{
+			m_aliases = newAliasesString.split(QChar::fromLatin1(Separator));
+		}
+		bool containsAlias(const QString &alias) { return m_aliases.contains(alias); }
 
 		QString backendUrl() const { return m_backendUrl; }
 		void setBackendUrl(const QString &newBackendUrl) { m_backendUrl = newBackendUrl; }
@@ -46,7 +49,10 @@ public:
 		QColor colorLight() const { return m_color.lighter(110); }
 		void setColor(const QColor &newColor) { m_color = newColor; }
 		QString colorToString() const { return m_color.name(); }
-		void setColorFromString(const QString &newColorString) { m_color.setNamedColor(newColorString); }
+		void setColorFromString(const QString &newColorString)
+		{
+			m_color = QColor::fromString(newColorString);
+		}
 
 		QString cookies() const { return m_cookie; }
 		void setCookies(const QString &newCookie) { m_cookie = newCookie; }

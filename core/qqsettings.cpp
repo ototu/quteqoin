@@ -236,7 +236,7 @@ void QQSettings::setUserPalmiShorcuts(const QList< QPair<QChar, QString> >& user
 	if(userPalmiShortcuts != defaultUserPalmiShortcuts())
 	{
 		QStringList listShortcuts;
-		for(const auto &shortcut : qAsConst(m_userPalmiShortcuts))
+		for (const auto &shortcut : std::as_const(m_userPalmiShortcuts))
 			listShortcuts.append(QString(shortcut.first).append(shortcut.second));
 
 		setValue(SETTINGS_PALMI_SHORCUTS, listShortcuts);

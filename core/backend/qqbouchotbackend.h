@@ -43,7 +43,10 @@ public:
 		QColor colorLight() const { return m_color.lighter(110); }
 		void setColor(const QColor &newColor) { m_color = newColor; }
 		QString colorToString() const { return m_color.name(); }
-		void setColorFromString(const QString &newColorString) { m_color.setNamedColor(newColorString); }
+		void setColorFromString(const QString &newColorString)
+		{
+			m_color = QColor::fromString(newColorString);
+		}
 
 		QString cookie() const { return m_cookie; }
 		void setCookie(const QString &newCookie) { m_cookie = newCookie; }

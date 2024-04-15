@@ -1,19 +1,16 @@
 #include "qqpinipede.h"
 
-#include "mainwindow.h"
 #include "core/qqbackendupdatedevent.h"
 #include "core/qqbakdisplayfilter.h"
 #include "core/qqbouchot.h"
 #include "core/qqpostdisplayfilter.h"
 #include "core/qqpurgebouchothistoevent.h"
 #include "core/qqtotozdownloader.h"
-#include "ui/qqmessageblockuserdata.h"
-#include "ui/qqpalmipede.h"
-#include "ui/qqtotozmanager.h"
-#include "ui/qqtotozviewer.h"
 #include "ui/pinipede/qqpinioverlay.h"
 #include "ui/pinipede/qqpostparser.h"
 #include "ui/pinipede/qqtextbrowser.h"
+#include "ui/qqmessageblockuserdata.h"
+#include "ui/qqtotozmanager.h"
 
 #include <QtAlgorithms>
 #include <QApplication>
@@ -90,14 +87,12 @@ QQPinipede::~QQPinipede()
 	delete m_totozDownloader;
 
 	QList<QString> listTabs = m_listPostsTabMap.keys();
-	for(const QString &tab : qAsConst(listTabs))
-	{
+	for (const QString &tab : std::as_const(listTabs)) {
 		for(int i = 0; i < listTabs.size(); i++)
 			delete m_listPostsTabMap.take(tab);
 	}
 
-	for(QQPostDisplayFilter *df : qAsConst(m_listpostDisplayFilters))
-	{
+	for (QQPostDisplayFilter *df : std::as_const(m_listpostDisplayFilters)) {
 		if(df != nullptr)
 			delete df;
 	}
@@ -390,7 +385,7 @@ void QQPinipede::tabEventsAcknowledged(const QString& groupName)
 	setTabText(indexOf(textBrowser), groupName);
 
 	QList<QQBouchot *> listBouchots = QQBouchot::listBouchotsGroup(groupName);
-	for(QQBouchot *b : qAsConst(listBouchots))
+	for (QQBouchot *b : std::as_const(listBouchots))
 		b->resetStatus();
 }
 
@@ -453,8 +448,7 @@ void QQPinipede::searchText(const QString &text, bool forward)
 	QColor color(settings.value(SETTINGS_GENERAL_HIGHLIGHT_COLOR, DEFAULT_GENERAL_HIGHLIGHT_COLOR).toString());
 
 	auto textBrowsers = m_textBrowserHash.values();
-	for(QQTextBrowser *textBrowser : qAsConst(textBrowsers))
-	{
+	for (QQTextBrowser *textBrowser : std::as_const(textBrowsers)) {
 		if(! textBrowser->isVisible())
 			continue;
 
@@ -564,8 +558,7 @@ void QQPinipede::duckKilled(QString board, QString postId)
 	QQBouchot *bouchotDest = QQBouchot::bouchot(board);
 	QString message;
 	auto posts = bouchotDest->postsHistory();
-	for(QQPost *post : qAsConst(posts))
-	{
+	for (QQPost *post : std::as_const(posts)) {
 		if(post->id() == postId)
 		{
 			QQNorloge norloge(board, post->norloge());
@@ -859,8 +852,7 @@ void QQPinipede::unHighlight(QQTextBrowser *tBrowser)
 {
 	m_hiddenPostViewerLabel->hide();
 	auto extraSelections = tBrowser->extraSelections();
-	for(QTextEdit::ExtraSelection extra : qAsConst(extraSelections))
-	{
+	for (QTextEdit::ExtraSelection extra : std::as_const(extraSelections)) {
 		if(! extra.cursor.hasSelection()) //fulll block
 		{
 			QTextBlockFormat format = extra.cursor.blockFormat();
@@ -901,10 +893,8 @@ void QQPinipede::setTotozManager(QQTotozManager * ttManager)
 
 	m_totozManager = ttManager;
 
-	if(m_totozManager != nullptr)
-	{
-		for(QQTextBrowser *tb : qAsConst(m_textBrowserHash))
-		{
+	if (m_totozManager != nullptr) {
+		for (QQTextBrowser *tb : std::as_const(m_textBrowserHash)) {
 			connect(tb, SIGNAL(totozBookmarkAct(QString,QQTotoz::TotozBookmarkAction)),
 			        m_totozManager, SLOT(totozBookmarkDo(QString,QQTotoz::TotozBookmarkAction)));
 		}
@@ -937,8 +927,7 @@ bool QQPinipede::applyPostDisplayFilters(QQPost *post)
 	if(! post->bouchot()->isVisible())
 		return false;
 
-	for(QQPostDisplayFilter *filter : qAsConst(m_listpostDisplayFilters))
-	{
+	for (QQPostDisplayFilter *filter : std::as_const(m_listpostDisplayFilters)) {
 		if(filter->filterMatch(post))
 			return false;
 	}
@@ -988,8 +977,7 @@ void QQPinipede::newPostsAvailable(QString groupName)
 
 	QQListPostPtr newPosts;
 	auto bouchots = QQBouchot::listBouchotsGroup(groupName);
-	for(QQBouchot *b : qAsConst(bouchots))
-	{
+	for (QQBouchot *b : std::as_const(bouchots)) {
 		QQListPostPtr newPostsBouchot = b->takeNewPosts();
 		if(newPostsBouchot.size() > 0)
 			newPosts.append(newPostsBouchot);
