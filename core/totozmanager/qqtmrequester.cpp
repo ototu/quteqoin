@@ -32,7 +32,7 @@ void QQTMRequester::requestFinishedSlot(QNetworkReply * reply)
 		QStringList totozes;
 		while (xmlReader.readNextStartElement())
 		{
-			if(xmlReader.name().compare("totozes") == 0)
+            if(xmlReader.name().compare(QString::fromUtf8("totozes")) == 0)
 			{
 				auto attributes = xmlReader.attributes();
 				if (attributes.hasAttribute("results"))
@@ -44,7 +44,7 @@ void QQTMRequester::requestFinishedSlot(QNetworkReply * reply)
 				}
 			}
 
-			if(xmlReader.name().compare("name") == 0)
+            if(xmlReader.name().compare(QString::fromUtf8("name")) == 0)
 			{
 				totozes.append(xmlReader.readElementText(QXmlStreamReader::SkipChildElements));
 				xmlReader.skipCurrentElement(); // next <totoz>....</totoz>
