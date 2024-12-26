@@ -1,6 +1,6 @@
 #!/bin/bash
 
-curl http://unicode.org/Public/emoji/12.0/emoji-test.txt | egrep '^#|; fully-qualified' \
+curl http://unicode.org/Public/emoji/latest/emoji-test.txt | grep -E '^#|; fully-qualified' \
        | sed -e 's/# group:/group:/' -e 's/# subgroup:/subgroup:/' | egrep -v '^#'  > emoji.tmp
 
 cat emoji.tmp | awk -F "#" '
@@ -24,6 +24,7 @@ NF==2 {
        	sub(/ /,"	",$2);
 	sub(/flag: /,"",$2);
 	sub(/keycap: /,"",$2);
+	sub(/E[0-9]+.[0-9]+ /,"",$2);
 
 	split($2,t," ");
 	if (group != "") {
@@ -38,4 +39,4 @@ NF==2 {
 	}
 	print "emoji	"$2;
 }' > emojis
-
+rm emoji.tmp

@@ -1,7 +1,7 @@
 #include "qqpalmilineeditint.h"
 
-#include "core/qqnetworkaccessor.h"
-#include "core/qqnorlogeref.h"
+#include "delimitedcompleter.h"
+
 #include "core/qqsettings.h"
 #include "ui/qqtotozmanager.h"
 
@@ -12,6 +12,7 @@
 #include <QKeyEvent>
 #include <QMimeData>
 #include <QToolButton>
+#include <QStringListModel>
 #include <QStyle>
 
 #define MAX_POST_HISTORY_SIZE 6 // 5 + Current
@@ -21,30 +22,20 @@
 /// \param parent
 ///
 QQPalmiLineEditInt::QQPalmiLineEditInt(QWidget *parent) :
-	QLineEdit(parent),
-	m_indexInPostHistory(0),
-	m_postHistory()
+    QLineEdit(parent),
+    m_indexInPostHistory(0),
+    m_postHistory()
 {
-	setAttribute(Qt::WA_InputMethodEnabled, true);
-	setFrame(false);
-#if(QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
-	setClearButtonEnabled(true);
+    setAttribute(Qt::WA_InputMethodEnabled, true);
+    setFrame(false);
+    setClearButtonEnabled(true);
     setStyleSheet(QString("QLineEdit {color: black; background-color: transparent;}"));
-#else
-	m_clearButton = new QToolButton(this);
-	QFontMetrics fMetrics(font());
-	QPixmap pixmap = QPixmap(":/img/palmi-clear.png").scaledToHeight(fMetrics.height() + 1);
-	m_clearButton->setIcon(QIcon(pixmap));
-	m_clearButton->setIconSize(pixmap.size());
-	m_clearButton->setStyleSheet("QToolButton { border: none; padding: 0px; }");
-	m_clearButton->hide();
-	connect(m_clearButton, SIGNAL(clicked()), this, SLOT(clear()));
-	connect(this, SIGNAL(textChanged(const QString&)), this, SLOT(updateCloseButton(const QString&)));
-	int frameWidth = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
-	setStyleSheet(QString("* {padding-right: %1px; color: black; background-color: transparent;}").arg(m_clearButton->sizeHint().width() + frameWidth + 1));
-#endif
 
-	m_postHistory.enqueue("");
+    DelimitedCompleter *dc = new DelimitedCompleter(this, ' ');
+    QStringList l = {"[:totoz]", "[:taiste]", "[:plop]"};
+    dc->setModel(new QStringListModel(l));
+    this->setCompleter(dc);
+    m_postHistory.enqueue("");
 }
 
 //////////////////////////////////////////////////////////////
@@ -53,26 +44,26 @@ QQPalmiLineEditInt::QQPalmiLineEditInt(QWidget *parent) :
 ///
 void QQPalmiLineEditInt::insertText(const QString &str)
 {
-	QString newStr = str;
+    auto newStr = str;
 
-	int moveCursorCount = 0;
-	if(str.contains("%s"))
-	{
-		if(!hasFocus())
-			setSelection(m_savedSelection.first, m_savedSelection.second);
-		QString selection = selectedText();
-		newStr.replace("%s", selection);
+    auto moveCursorCount = 0;
+    if(str.contains("%s"))
+    {
+        if(!hasFocus())
+            setSelection(m_savedSelection.first, m_savedSelection.second);
+        auto selection = selectedText();
+        newStr.replace("%s", selection);
 
-		if(selection.length() == 0)
-			moveCursorCount = str.length() - (str.indexOf("%s") + 2);
-	}
-	insert(newStr);
+        if(selection.length() == 0)
+            moveCursorCount = str.length() - (str.indexOf("%s") + 2);
+    }
+    insert(newStr);
 
-	if(moveCursorCount > 0)
-		cursorBackward(false, moveCursorCount);
+    if(moveCursorCount > 0)
+        cursorBackward(false, moveCursorCount);
 
-	m_postHistory.last() = text();
-	m_indexInPostHistory = m_postHistory.size() - 1; //last
+    m_postHistory.last() = text();
+    m_indexInPostHistory = m_postHistory.size() - 1; //last
 }
 
 //////////////////////////////////////////////////////////////
@@ -80,16 +71,16 @@ void QQPalmiLineEditInt::insertText(const QString &str)
 ///
 void QQPalmiLineEditInt::pushCurrentToHistory()
 {
-	QString currText = text();
-	if(! m_postHistory.contains(currText))
-		m_postHistory.last() = currText;
+    auto currText = text();
+    if(! m_postHistory.contains(currText))
+        m_postHistory.last() = currText;
 
-	m_postHistory.enqueue("");
+    m_postHistory.enqueue("");
 
-	while(m_postHistory.size() > MAX_POST_HISTORY_SIZE)
-		m_postHistory.dequeue();
+    while(m_postHistory.size() > MAX_POST_HISTORY_SIZE)
+        m_postHistory.dequeue();
 
-	m_indexInPostHistory = m_postHistory.size() - 1; //last
+    m_indexInPostHistory = m_postHistory.size() - 1; //last
 }
 
 //////////////////////////////////////////////////////////////
@@ -98,7 +89,7 @@ void QQPalmiLineEditInt::pushCurrentToHistory()
 ///
 void QQPalmiLineEditInt::dragEnterEvent(QDragEnterEvent *event)
 {
-	event->ignore();
+    event->ignore();
 }
 
 //////////////////////////////////////////////////////////////
@@ -107,8 +98,8 @@ void QQPalmiLineEditInt::dragEnterEvent(QDragEnterEvent *event)
 ///
 void QQPalmiLineEditInt::focusInEvent(QFocusEvent *e)
 {
-	updateTotozCompleter();
-	QLineEdit::focusInEvent(e);
+    updateTotozCompleter();
+    QLineEdit::focusInEvent(e);
 }
 
 //////////////////////////////////////////////////////////////
@@ -117,9 +108,9 @@ void QQPalmiLineEditInt::focusInEvent(QFocusEvent *e)
 ///
 void QQPalmiLineEditInt::focusOutEvent(QFocusEvent *e)
 {
-	m_savedSelection = qMakePair(selectionStart(), selectedText().length());
+    m_savedSelection = qMakePair(selectionStart(), selectedText().length());
 
-	QLineEdit::focusOutEvent(e);
+    QLineEdit::focusOutEvent(e);
 }
 
 //////////////////////////////////////////////////////////////
@@ -128,100 +119,69 @@ void QQPalmiLineEditInt::focusOutEvent(QFocusEvent *e)
 ///
 void QQPalmiLineEditInt::keyPressEvent(QKeyEvent *e)
 {
-	QQSettings settings;
-	bool saveHistory = true;
+    QQSettings settings;
+    bool saveHistory = true;
 
-	QList< QPair<QChar, QString> > palmishortcuts = settings.palmiShorcuts();
+    auto palmishortcuts = settings.palmiShorcuts();
 
-	bool eventManaged = false;
-	int keyInt = e->key();
-	Qt::Key key = static_cast<Qt::Key>(keyInt);
+    auto eventManaged = false;
+    auto keyInt = e->key();
+    auto key = static_cast<Qt::Key>(keyInt);
 
-	if(e->modifiers() == Qt::AltModifier)
-	{
-		if(key >= SETTINGS_PALMI_SHORTCUTS_MIN_KEY &&
-				key <= SETTINGS_PALMI_SHORTCUTS_MAX_KEY)
-		{
-			QChar keyChr = QChar(keyInt).toLower();
-			for(int i = 0; i < palmishortcuts.size(); i++)
-			{
-				if(keyChr == palmishortcuts.at(i).first)
-				{
-					insertText(palmishortcuts.at(i).second);
+    if(e->modifiers() == Qt::AltModifier)
+    {
+        if(key >= SETTINGS_PALMI_SHORTCUTS_MIN_KEY &&
+                key <= SETTINGS_PALMI_SHORTCUTS_MAX_KEY)
+        {
+            QChar keyChr = QChar(keyInt).toLower();
+            for(int i = 0; i < palmishortcuts.size(); i++)
+            {
+                if(keyChr == palmishortcuts.at(i).first)
+                {
+                    insertText(palmishortcuts.at(i).second);
 
-					eventManaged = true;
-					e->accept();
-					break;
-				}
-			}
-		}
-		else if(key == Qt::Key_Up || key == Qt::Key_Down)
-		{
-			e->accept();
-			emit changeBoard(key == Qt::Key_Down);
-		}
-	}
-	else if(e->modifiers() == Qt::NoModifier)
-	{
-		if(key == Qt::Key_Escape)
-		{
-			e->accept();
-			clear();
-			eventManaged = true;
-		}
+                    eventManaged = true;
+                    e->accept();
+                    break;
+                }
+            }
+        }
+        else if(key == Qt::Key_Up || key == Qt::Key_Down)
+        {
+            e->accept();
+            emit changeBoard(key == Qt::Key_Down);
+        }
+    }
+    else if(e->modifiers() == Qt::NoModifier)
+    {
+        if(key == Qt::Key_Escape)
+        {
+            e->accept();
+            clear();
+            eventManaged = true;
+        }
 
-		else if(key == Qt::Key_Up || key == Qt::Key_Down)
-		{
-			e->accept();
-			rotateHistory(key == Qt::Key_Down);
-			saveHistory = false; // Ne pas sauver lors d'une rotation
-		}
-	}
+        else if(key == Qt::Key_Up || key == Qt::Key_Down)
+        {
+            e->accept();
+            rotateHistory(key == Qt::Key_Down);
+            saveHistory = false; // Ne pas sauver lors d'une rotation
+        }
+    }
 
-	if(! eventManaged)
-	{
-		QLineEdit::keyPressEvent(e);
+    if(! eventManaged)
+    {
+        QLineEdit::keyPressEvent(e);
 
-		if(keyInt <= Qt::Key_ydiaeresis) //Permet de ne pas reagir sur les touches fleches / delete / ...
-			completeTotoz();
-	}
+        if(keyInt <= Qt::Key_ydiaeresis) //Permet de ne pas reagir sur les touches fleches / delete / ...
+            completeTotoz();
+    }
 
-	if(saveHistory)
-	{
-		m_postHistory.last() = text();
-		m_indexInPostHistory = m_postHistory.size() - 1; //last
-	}
-}
-
-#if(QT_VERSION < QT_VERSION_CHECK(5, 2, 0))
-//////////////////////////////////////////////////////////////
-/// \brief resizeEvent
-/// \param event
-///
-void QQPalmiLineEditInt::resizeEvent(QResizeEvent *event)
-{
-	QSize sz = m_clearButton->sizeHint();
-	int frameWidth = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
-	m_clearButton->move(rect().right() - frameWidth - sz.width(),
-						(rect().bottom() + 1 - sz.height())/2);
-
-	QLineEdit::resizeEvent(event);
-}
-#endif
-
-//////////////////////////////////////////////////////////////
-/// \brief LineEdit::updateCloseButton
-/// \param text
-///
-void QQPalmiLineEditInt::updateCloseButton(const QString &text)
-{
-#if(QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
-	Q_UNUSED(text)
-#else
-	m_clearButton->setVisible(!text.isEmpty());
-	if(m_indexInPostHistory == 0)
-		m_postHistory.enqueue(text);
-#endif
+    if(saveHistory)
+    {
+        m_postHistory.last() = text();
+        m_indexInPostHistory = m_postHistory.size() - 1; //last
+    }
 }
 
 //////////////////////////////////////////////////////////////
@@ -229,8 +189,8 @@ void QQPalmiLineEditInt::updateCloseButton(const QString &text)
 ///
 void QQPalmiLineEditInt::updateTotozCompleter()
 {
-	m_listTotoz = QQTotozManager::bookmarkedTotozIds();
-	m_listTotoz.sort();
+    m_listTotoz = QQTotozManager::bookmarkedTotozIds();
+    m_listTotoz.sort();
 }
 
 //////////////////////////////////////////////////////////////
@@ -238,26 +198,26 @@ void QQPalmiLineEditInt::updateTotozCompleter()
 ///
 void QQPalmiLineEditInt::completeTotoz()
 {
-	QString txt = text().left(cursorPosition());
-	int pos = txt.lastIndexOf("[:");
-	if(pos >= 0)
-	{
-		txt = txt.right(txt.length() - (pos + 2));
-		if(! txt.contains(']'))
-		{
-			for(int i = 0; i < m_listTotoz.size(); ++i)
-			{
-				if(m_listTotoz.at(i).startsWith(txt, Qt::CaseInsensitive))
-				{
-					QString totoz = m_listTotoz.at(i);
-					totoz.append(']');
-					insertText(totoz.right(totoz.length() - txt.length()));
-					setSelection(cursorPosition(), 0 - (totoz.length() - txt.length()));
-					break;
-				}
-			}
-		}
-	}
+    auto txt = text().left(cursorPosition());
+    auto pos = txt.lastIndexOf("[:");
+    if(pos >= 0)
+    {
+        txt = txt.right(txt.length() - (pos + 2));
+        if(! txt.contains(']'))
+        {
+            for(int i = 0; i < m_listTotoz.size(); ++i)
+            {
+                if(m_listTotoz.at(i).startsWith(txt, Qt::CaseInsensitive))
+                {
+                    auto totoz = m_listTotoz.at(i);
+                    totoz.append(']');
+                    insertText(totoz.right(totoz.length() - txt.length()));
+                    setSelection(cursorPosition(), 0 - (totoz.length() - txt.length()));
+                    break;
+                }
+            }
+        }
+    }
 }
 
 //////////////////////////////////////////////////////////////
@@ -265,10 +225,10 @@ void QQPalmiLineEditInt::completeTotoz()
 ///
 void QQPalmiLineEditInt::rotateHistory(bool forward)
 {
-	if(forward && m_indexInPostHistory < m_postHistory.size() - 1)
-		m_indexInPostHistory ++;
-	else if((!forward) && m_indexInPostHistory > 0)
-		m_indexInPostHistory --;
+    if(forward && m_indexInPostHistory < m_postHistory.size() - 1)
+        m_indexInPostHistory ++;
+    else if((!forward) && m_indexInPostHistory > 0)
+        m_indexInPostHistory --;
 
-	setText(m_postHistory.at(m_indexInPostHistory));
+    setText(m_postHistory.at(m_indexInPostHistory));
 }

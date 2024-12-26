@@ -27,6 +27,7 @@ Makefile*
 #QtCtreator Qml
 *.qmlproject.user
 *.qmlproject.user.*
+.qtc_clangd/
 .vscode/
 .kde4/
 quteqoin
