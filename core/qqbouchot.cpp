@@ -40,13 +40,10 @@ using QQBouchotDef = struct
 
 //Définition des bouchots préconfigurés
 // tiré d'olcc by Chrisix
-const std::array<QQBouchotDef, 11> bouchotsDef =
+const std::array<QQBouchotDef, 7> bouchotsDef =
 {{
     { {"dlfp"}, {"https://linuxfr.org/board/index.xml"}, {"https://linuxfr.org/board"}, {"board%5Bmessage%5D=%m"},
       {"#dac0de"}, {"linuxfr,beyrouth,passite,dapassite"}, {"linuxfr.org_session=;remember_account_token="}, QQBouchot::SlipTagsEncoded
-    },
-    { {"batavie"}, {"http://batavie.leguyader.eu/remote.xml"}, {"http://batavie.leguyader.eu/index.php/add"}, {"message=%m"},
-      {"#ffccaa"}, {"llg"}, {""}, QQBouchot::SlipTagsRaw
     },
     { {"euromussels"}, {"http://faab.euromussels.eu/data/backend.xml"}, {"http://faab.euromussels.eu/add.php"}, {"message=%m"},
       {"#d0d0ff"}, {"euro,euroxers,eurofaab"}, {""}, QQBouchot::SlipTagsRaw },
@@ -54,18 +51,12 @@ const std::array<QQBouchotDef, 11> bouchotsDef =
       {"#ededdb"}, {"shoop,dax"}, {""}, QQBouchot::SlipTagsRaw },
     { {"moules"}, {"http://moules.org/board/last.php?backend=tsv&id=%i&order=desc"}, {"http://moules.org/board/add.php"}, {"message=%m"},
       {"#ffe3c9"}, {""}, {""}, QQBouchot::SlipTagsRaw },
-    { {"gabuzomeu"}, {"http://gabuzomeu.fr/tribune.xml"}, {"http://gabuzomeu.fr/tribune/post"}, {"message=%m"},
-      {"#aaffbb"}, {""}, {""}, QQBouchot::SlipTagsRaw },
     { {"devnewton"}, {"https://jb3.devnewton.fr/legacy/xml?last=%i"}, {"https://jb3.devnewton.fr/legacy/post"}, {"message=%m"},
       {"#666666"}, {""}, {""}, QQBouchot::SlipTagsEncoded },
-    { {"faab"}, {"http://ratatouille.leguyader.eu/data/backend.xml"}, {"http://ratatouille.leguyader.eu/add.php"}, {"message=%m"},
-      {"#C5D068"}, {"ratatouille"}, {""}, QQBouchot::SlipTagsRaw },
     { {"goboard"}, {"https://ototu.euromussels.eu/goboard/backend/tsv&last=%i"}, {"https://ototu.euromussels.eu/goboard/post"}, {"message=%m"},
       {"#fffabb"}, {"goboard"}, {""}, QQBouchot::SlipTagsEncoded },
     { {"sauf.ca"}, {"http://sauf.ca/feeds/all.tsv"}, {""}, {""},
-      {"#4aff47"}, {""}, {""}, QQBouchot::SlipTagsRaw },
-    { {"42"}, {"http://www.miaoli.im/tribune/42/tsv"}, {"http://www.miaoli.im/tribune/42/post"}, {"message=%m"},
-      {"#ffd0d0"}, {""}, {""}, QQBouchot::SlipTagsRaw }
+      {"#4aff47"}, {""}, {""}, QQBouchot::SlipTagsRaw }
 }};
 
 constexpr int REFRESH_RATIOS_SIZE = 15;

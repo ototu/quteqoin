@@ -192,6 +192,18 @@ qt_add_resources(
 add_executable(quteqoin
 	${SOURCES})
 
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    install(TARGETS quteqoin DESTINATION bin)
+
+    # Install desktop entry
+    install(FILES quteqoin.desktop DESTINATION share/applications )
+
+    # Install icon
+    install(FILES QuteQoin-Icon.png DESTINATION share/icons/hicolor/scalable/apps)
+
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
 target_link_libraries(quteqoin PRIVATE Qt6::Core)
 target_link_libraries(quteqoin PRIVATE Qt6::Gui)
 target_link_libraries(quteqoin PRIVATE Qt6::DBus)
