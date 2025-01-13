@@ -1,7 +1,5 @@
 #include "qqpalmilineeditint.h"
 
-#include "delimitedcompleter.h"
-
 #include "core/qqsettings.h"
 #include "ui/qqtotozmanager.h"
 
@@ -31,10 +29,6 @@ QQPalmiLineEditInt::QQPalmiLineEditInt(QWidget *parent) :
     setClearButtonEnabled(true);
     setStyleSheet(QString("QLineEdit {color: black; background-color: transparent;}"));
 
-    DelimitedCompleter *dc = new DelimitedCompleter(this, ' ');
-    QStringList l = {"[:totoz]", "[:taiste]", "[:plop]"};
-    dc->setModel(new QStringListModel(l));
-    this->setCompleter(dc);
     m_postHistory.enqueue("");
 }
 

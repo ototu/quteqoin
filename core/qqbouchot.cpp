@@ -40,7 +40,7 @@ using QQBouchotDef = struct
 
 //Définition des bouchots préconfigurés
 // tiré d'olcc by Chrisix
-const std::array<QQBouchotDef, 7> bouchotsDef =
+const std::array<QQBouchotDef, 8> bouchotsDef =
 {{
     { {"dlfp"}, {"https://linuxfr.org/board/index.xml"}, {"https://linuxfr.org/board"}, {"board%5Bmessage%5D=%m"},
       {"#dac0de"}, {"linuxfr,beyrouth,passite,dapassite"}, {"linuxfr.org_session=;remember_account_token="}, QQBouchot::SlipTagsEncoded
@@ -51,12 +51,14 @@ const std::array<QQBouchotDef, 7> bouchotsDef =
       {"#ededdb"}, {"shoop,dax"}, {""}, QQBouchot::SlipTagsRaw },
     { {"moules"}, {"http://moules.org/board/last.php?backend=tsv&id=%i&order=desc"}, {"http://moules.org/board/add.php"}, {"message=%m"},
       {"#ffe3c9"}, {""}, {""}, QQBouchot::SlipTagsRaw },
-    { {"devnewton"}, {"https://jb3.devnewton.fr/legacy/xml?last=%i"}, {"https://jb3.devnewton.fr/legacy/post"}, {"message=%m"},
+    { {"devnewton"}, {"https://gb3.devnewton.fr/gb0/tsv"}, {"https://gb3.devnewton.fr/gb0/post"}, {"message=%m"},
       {"#666666"}, {""}, {""}, QQBouchot::SlipTagsEncoded },
     { {"goboard"}, {"https://ototu.euromussels.eu/goboard/backend/tsv&last=%i"}, {"https://ototu.euromussels.eu/goboard/post"}, {"message=%m"},
       {"#fffabb"}, {"goboard"}, {""}, QQBouchot::SlipTagsEncoded },
     { {"sauf.ca"}, {"http://sauf.ca/feeds/all.tsv"}, {""}, {""},
-      {"#4aff47"}, {""}, {""}, QQBouchot::SlipTagsRaw }
+      {"#4aff47"}, {""}, {""}, QQBouchot::SlipTagsRaw },
+    { {"gabuzomeu"}, {"https://gb3.plop.cc/gb0/tsv"}, {"https://gb3.plop.cc/gb0/post"}, {"message=%m"},
+     {"#aaffbb"}, {""}, {""}, QQBouchot::SlipTagsRaw }
 }};
 
 constexpr int REFRESH_RATIOS_SIZE = 15;
