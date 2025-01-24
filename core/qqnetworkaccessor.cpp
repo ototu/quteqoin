@@ -3,13 +3,14 @@
 
 #include "qqsettings.h"
 
-#include <QtDebug>
 #include <QApplication>
 #include <QAuthenticator>
 #include <QNetworkCookie>
 #include <QNetworkCookieJar>
 #include <QNetworkProxyFactory>
+#include <QTimeZone>
 #include <QTimer>
+#include <QtDebug>
 
 constexpr int NETWORK_REQUEST_TIMEOUT_MS = 60000;
 
@@ -136,7 +137,11 @@ QDateTime QQNetworkAccessor::parseRC822(const QString& string)
 	    auto offset = QStringView{fields[4]}.right(4);
         time = time.addSecs(0 - (offset.first(2).toInt() * 3600 + offset.right(2).toInt() * 60));
 	}
+#if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
 	QDateTime datetime(date, time, Qt::UTC);
+#else
+	QDateTime datetime(date, time, QTimeZone(QTimeZone::UTC));
+#endif
 	return datetime;
 }
 
