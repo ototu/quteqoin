@@ -16,13 +16,7 @@ constexpr int NETWORK_REQUEST_TIMEOUT_MS = 60000;
 QQNetworkAccessor::QQNetworkAccessor(QObject *parent) :
     QObject(parent)
 {
-	m_qnam = new QNetworkAccessManager(this);
-
-	connect(m_qnam, SIGNAL(finished(QNetworkReply*)),
-	        this, SLOT(requestFinishedSlot(QNetworkReply*)));
-
-	connect(m_qnam, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
-	        this, SLOT(onProxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
+    clearNetworkBackend();
 }
 
 void QQNetworkAccessor::updateProxySettings()
@@ -205,15 +199,19 @@ void QQNetworkAccessor::clearCookiesForUrl(const QUrl &url)
  */
 void QQNetworkAccessor::clearNetworkBackend()
 {
-	m_qnam->deleteLater();
+    if (! m_qnam.isNull())
+        m_qnam->deleteLater();
 
 	m_qnam = new QNetworkAccessManager(this);
 
-	connect(m_qnam, SIGNAL(finished(QNetworkReply*)),
-	        this, SLOT(requestFinishedSlot(QNetworkReply*)));
+	m_qnam->setRedirectPolicy(QNetworkRequest::ManualRedirectPolicy);
 
-	connect(m_qnam, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
-	        this, SLOT(onProxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
+	connect(m_qnam, &QNetworkAccessManager::finished, this, &QQNetworkAccessor::requestFinishedSlot);
+
+	connect(m_qnam,
+	        &QNetworkAccessManager::proxyAuthenticationRequired,
+	        this,
+	        &QQNetworkAccessor::onProxyAuthenticationRequired);
 }
 
 /**

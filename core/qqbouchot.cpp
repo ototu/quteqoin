@@ -121,8 +121,8 @@ void QQBouchot::postMessage(const QString &message)
 	if(currentRefreshRatio() > 1.0F)
 		m_refreshRatioIndex = REFRESH_RATIOS_MID;
 
-	QString url = m_bSettings.postUrl();
-	QByteArray postData = m_bSettings.postData().toUtf8();
+	auto url = m_bSettings.postUrl();
+	auto postData = m_bSettings.postData().toUtf8();
 	QByteArray mark("%m");
 
 	if(postData.contains(mark))
@@ -134,7 +134,7 @@ void QQBouchot::postMessage(const QString &message)
 	request.setAttribute(QNetworkRequest::User, QQBouchot::PostRequest);
 	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded; charset=UTF-8");
 
-	QString ua = m_bSettings.ua();
+	auto ua = m_bSettings.ua();
 	if(ua.isEmpty())
 	{
 		QQSettings settings;
@@ -530,7 +530,7 @@ void QQBouchot::requestFinishedSlot(QNetworkReply *reply)
 {
 	if(reply->error() != QNetworkReply::NoError)
 	{
-		QString errMsg = reply->errorString();
+		auto errMsg = reply->errorString();
 		m_state.hasError = true;
 		qWarning() << Q_FUNC_INFO
 		           << "Bouchot :" << m_name
@@ -548,47 +548,45 @@ void QQBouchot::requestFinishedSlot(QNetworkReply *reply)
 				           << reply->request().attribute(QNetworkRequest::User, QQBouchot::UnknownRequest).toInt();
 		}
 
-
 		clearNetworkBackend();
-	}
-	else
-	{
+	} else {
 		m_state.hasError = false;
-		switch(reply->request().attribute(QNetworkRequest::User, QQBouchot::UnknownRequest).toInt())
-		{
-		    case QQBouchot::PostRequest:
-#ifndef QT_NO_DEBUG
-			    qDebug() << Q_FUNC_INFO << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
-				foreach (QByteArray ba, reply->rawHeaderList()) {
-					qDebug() << Q_FUNC_INFO << ba << QString(reply->rawHeader(ba));
-				}
-				qDebug() << Q_FUNC_INFO << reply->readAll();
 
-				qDebug() << Q_FUNC_INFO << reply->request().url();
-				foreach (QByteArray ba, reply->request().rawHeaderList()) {
-					qDebug() << Q_FUNC_INFO << ba << QString(reply->request().rawHeader(ba));
-				}
+		switch (reply->request().attribute(QNetworkRequest::User, QQBouchot::UnknownRequest).toInt()) {
+		case QQBouchot::PostRequest: {
+#ifndef QT_NO_DEBUG
+			qDebug() << Q_FUNC_INFO << "Req URL headers" << reply->request().url();
+
+			qDebug() << Q_FUNC_INFO << "Reply Status Code"
+							 << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+
+			for (QByteArray ba : reply->rawHeaderList()) {
+				qDebug() << Q_FUNC_INFO << "Reply headers" << ba << QString(reply->rawHeader(ba));
+			}
+
+			qDebug() << Q_FUNC_INFO << "Reply data" << reply->readAll().toStdString();
 #endif
 
-				if(reply->hasRawHeader(QByteArray::fromStdString(X_POST_ID_HEADER)))
-				{
-					m_hasXPostId = true;
-					m_xPostIds.append(QString(reply->rawHeader(QByteArray::fromStdString(X_POST_ID_HEADER))));
-				}
+			auto xPostId = reply->rawHeader(QByteArray::fromStdString(X_POST_ID_HEADER)).toLower();
+			if (xPostId.length() > 0) {
+				m_hasXPostId = true;
+				m_xPostIds.append(xPostId);
+			}
 
 				fetchBackend();
 			    break;
-		    case QQBouchot::BackendRequest:
-			    if(reply->hasRawHeader("Last-Modified"))
-					m_lastModifiedBackend = QString(reply->rawHeader("Last-Modified"));
+		}
+		case QQBouchot::BackendRequest:
+			auto lastModified = reply->header(QNetworkRequest::LastModifiedHeader);
+			if (lastModified.isValid())
+				m_lastModifiedBackend = lastModified.toString();
 
-				if(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toUInt() == HTTP_OK)
-				{
-					QString contentType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
-					parseBackend(reply->readAll(), contentType);
-				}
-				emit refreshOK();
-			    break;
+			if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toUInt() == HTTP_OK) {
+				QString contentType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
+				parseBackend(reply->readAll(), contentType);
+			}
+			emit refreshOK();
+			break;
 		}
 	}
 	reply->deleteLater();
@@ -858,11 +856,9 @@ void QQBouchot::sendBouchotEvents()
 		if(evRcv.acceptedEvents.testFlag(NewPostsAvailable) && !m_newPostHistory.empty())
 		{
 			QApplication::postEvent(evRcv.receiver,
-			                        new QQBackendUpdatedEvent(
-			                            QQBackendUpdatedEvent::BACKEND_UPDATED,
-			                            m_bSettings.group()),
-			                        Qt::LowEventPriority
-			                        );
+			                        new QQBackendUpdatedEvent(QQBackendUpdatedEvent::BACKEND_UPDATED,
+			                                                  m_bSettings.group()),
+			                        Qt::LowEventPriority);
 		}
 		if(evRcv.acceptedEvents.testFlag(StateChanged))
 		{
