@@ -118,9 +118,7 @@ set(SOURCES
 	"ui/qqtotozviewer.cpp"
 	"ui/qqtotozviewer.h"
 	"ui/boardinfo/qqboardinfoprogressbar.cpp"
-	"ui/boardinfo/qqboardinfoprogressbar.h"
-	"ui/palmipede/delimitedcompleter.cpp"
-	"ui/palmipede/delimitedcompleter.h"
+        "ui/boardinfo/qqboardinfoprogressbar.h"
 	"ui/palmipede/qqdockpalmi.cpp"
 	"ui/palmipede/qqdockpalmi.h"
 	"ui/palmipede/qqpalmifileposter.cpp"
@@ -191,6 +189,18 @@ qt_add_resources(
 
 add_executable(quteqoin
 	${SOURCES})
+
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    install(TARGETS quteqoin DESTINATION bin)
+
+    # Install desktop entry
+    install(FILES quteqoin.desktop DESTINATION share/applications )
+
+    # Install icon
+    install(FILES QuteQoin-Icon.png DESTINATION share/icons/hicolor/scalable/apps)
+
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 target_link_libraries(quteqoin PRIVATE Qt6::Core)
 target_link_libraries(quteqoin PRIVATE Qt6::Gui)

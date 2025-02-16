@@ -3,26 +3,21 @@
 
 #include "qqsettings.h"
 
-#include <QtDebug>
 #include <QApplication>
 #include <QAuthenticator>
 #include <QNetworkCookie>
 #include <QNetworkCookieJar>
 #include <QNetworkProxyFactory>
+#include <QTimeZone>
 #include <QTimer>
+#include <QtDebug>
 
 constexpr int NETWORK_REQUEST_TIMEOUT_MS = 60000;
 
 QQNetworkAccessor::QQNetworkAccessor(QObject *parent) :
     QObject(parent)
 {
-	m_qnam = new QNetworkAccessManager(this);
-
-	connect(m_qnam, SIGNAL(finished(QNetworkReply*)),
-	        this, SLOT(requestFinishedSlot(QNetworkReply*)));
-
-	connect(m_qnam, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
-	        this, SLOT(onProxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
+    clearNetworkBackend();
 }
 
 void QQNetworkAccessor::updateProxySettings()
@@ -142,7 +137,11 @@ QDateTime QQNetworkAccessor::parseRC822(const QString& string)
 	    auto offset = QStringView{fields[4]}.right(4);
         time = time.addSecs(0 - (offset.first(2).toInt() * 3600 + offset.right(2).toInt() * 60));
 	}
+#if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
 	QDateTime datetime(date, time, Qt::UTC);
+#else
+	QDateTime datetime(date, time, QTimeZone(QTimeZone::UTC));
+#endif
 	return datetime;
 }
 
@@ -205,15 +204,19 @@ void QQNetworkAccessor::clearCookiesForUrl(const QUrl &url)
  */
 void QQNetworkAccessor::clearNetworkBackend()
 {
-	m_qnam->deleteLater();
+    if (! m_qnam.isNull())
+        m_qnam->deleteLater();
 
 	m_qnam = new QNetworkAccessManager(this);
 
-	connect(m_qnam, SIGNAL(finished(QNetworkReply*)),
-	        this, SLOT(requestFinishedSlot(QNetworkReply*)));
+	m_qnam->setRedirectPolicy(QNetworkRequest::ManualRedirectPolicy);
 
-	connect(m_qnam, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
-	        this, SLOT(onProxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
+	connect(m_qnam, &QNetworkAccessManager::finished, this, &QQNetworkAccessor::requestFinishedSlot);
+
+	connect(m_qnam,
+	        &QNetworkAccessManager::proxyAuthenticationRequired,
+	        this,
+	        &QQNetworkAccessor::onProxyAuthenticationRequired);
 }
 
 /**
